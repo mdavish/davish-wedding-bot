@@ -10,6 +10,13 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(logger);
 
+// Custom 404 Handler
+app.use((req, res) => {
+  console.log("Received request for unknown path:", req.path);
+  console.log("Request body:", req.body);
+  res.status(404).send("Not Found");
+});
+
 const chat = new ChatCore({
   apiKey: process.env.YEXT_API_KEY || "",
   botId: "davish-wedding-bot",
@@ -22,9 +29,8 @@ app.post("/incoming-message", async (req, res) => {
   const messageBody = req.body.Body;
   const sender = req.body.From;
 
-  // Your logic to process the message and generate a response
+  console.log("Message received:", messageBody);
 
-  // Console log the message history
   const messagesFromSender = await client.messages.list({
     from: sender,
   });
