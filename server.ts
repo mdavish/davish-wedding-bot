@@ -10,13 +10,6 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(logger);
 
-// Custom 404 Handler
-app.use((req, res) => {
-  console.log("Received request for unknown path:", req.path);
-  console.log("Request body:", req.body);
-  res.status(404).send("Not Found");
-});
-
 const chat = new ChatCore({
   apiKey: process.env.YEXT_API_KEY || "",
   botId: "davish-wedding-bot",
@@ -70,6 +63,13 @@ app.post("/incoming-message", async (req, res) => {
 });
 
 const port = process.env.PORT || 3000; // 3000 or any default port for your local development
+
+// Custom 404 Handler
+app.use((req, res) => {
+  console.log("Received request for unknown path:", req.path);
+  console.log("Request body:", req.body);
+  res.status(404).send("Not Found");
+});
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
