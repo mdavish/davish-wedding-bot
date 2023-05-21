@@ -69,6 +69,8 @@ app.post("/incoming-message", async (req, res) => {
   res.send(splitMessage[0]);
 });
 
-app.listen(3000, () => {
-  console.log("Server listening on port 3000");
+const port = process.env.PORT || 3000; // 3000 or any default port for your local development
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
