@@ -19,47 +19,49 @@ const MAX_MESSAGES = 10;
 const SPLIT_CHAR = "ℹ";
 
 app.post("/incoming-message", async (req, res) => {
-  const messageBody = req.body.Body;
-  const sender = req.body.From;
+  try {
+    const messageBody = req.body.Body;
+    const sender = req.body.From;
 
-  console.log("Message received:", messageBody);
+    console.log("Message received:", messageBody);
 
-  const messagesFromSender = await client.messages.list({
-    from: sender,
-  });
-
-  const messagesToSender = await client.messages.list({
-    to: sender,
-  });
-
-  const allMessages = messagesFromSender
-    .concat(messagesToSender)
-    .sort((a, b) => {
-      return a.dateCreated > b.dateCreated ? 1 : -1;
+    const messagesFromSender = await client.messages.list({
+      from: sender,
     });
 
-  const messageHistory: Message[] = allMessages.map((message) => ({
-    source: message.direction === "inbound" ? "USER" : "BOT",
-    text: message.body,
-    timestamp: message.dateCreated.toDateString(),
-  }));
+    const messagesToSender = await client.messages.list({
+      to: sender,
+    });
 
-  console.log({ messageHistory });
+    const allMessages = messagesFromSender
+      .concat(messagesToSender)
+      .sort((a, b) => {
+        return a.dateCreated > b.dateCreated ? 1 : -1;
+      });
 
-  const chatResponse = await chat.getNextMessage({
-    messages: messageHistory,
-    context: {
-      method: "SMS",
-      senderNumber: sender,
-    },
-  });
+    const messageHistory: Message[] = allMessages.map((message) => ({
+      source: message.direction === "inbound" ? "USER" : "BOT",
+      text: message.body,
+      timestamp: message.dateCreated.toDateString(),
+    }));
 
-  console.log({ chatResponse });
+    console.log({ messageHistory });
 
-  res.set("Content-Type", "text/plain");
-  const messageText = chatResponse.message.text;
-  const splitMessage = messageText.split(SPLIT_CHAR);
-  res.send(splitMessage[0]);
+    const chatResponse = await chat.getNextMessage({
+      messages: messageHistory,
+    });
+
+    console.log({ chatResponse });
+
+    res.set("Content-Type", "text/plain");
+    const messageText = chatResponse.message.text;
+    const splitMessage = messageText.split(SPLIT_CHAR);
+    res.send(splitMessage[0]);
+  } catch (e) {
+    console.log("Error in incoming-message route");
+    console.log(e);
+    res.send("Sorry, something went wrong. Please try again later.");
+  }
 });
 
 const port = process.env.PORT || 3000; // 3000 or any default port for your local development
