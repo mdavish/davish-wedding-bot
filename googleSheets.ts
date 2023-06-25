@@ -1,5 +1,4 @@
 import { google } from "googleapis";
-import { readFileSync } from "fs";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -21,11 +20,6 @@ export function rowsToObjects(rows: string[][]): Record<string, string>[] {
 }
 
 export function getSheetAuth() {
-  const credentials = JSON.parse(readFileSync(CREDENTIALS_FILE_PATH, "utf8"));
-
-  if (!(credentials.client_email === process.env.CLIENT_EMAIL)) {
-  }
-
   const auth = new google.auth.JWT(
     process.env.GCLOUD_CLIENT_EMAIL,
     undefined,
