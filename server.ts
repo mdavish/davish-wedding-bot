@@ -14,7 +14,7 @@ app.use(logger);
 
 const chat = new ChatCore({
   apiKey: process.env.YEXT_API_KEY || "",
-  botId: "davish-wedding-bot",
+  botId: "twilio-bot",
 });
 
 const MAX_MESSAGES = 3; // Something weird is happening when you make this too high
