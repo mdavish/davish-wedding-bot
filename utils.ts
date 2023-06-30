@@ -1,3 +1,4 @@
+import { PhoneNumberUtil, PhoneNumberFormat } from "google-libphonenumber";
 import { readGuestList, getSheetAuth } from "./googleSheets";
 import { GuestSchema } from "./sheetsSchemas";
 import { sendMessage } from "./twilioClient";
@@ -11,6 +12,23 @@ interface Report {
 
 const ASHLEY_PHONE = "9724002844";
 const MAX_PHONE = "2155346876";
+
+const phoneUtil = PhoneNumberUtil.getInstance();
+
+export function formatPhoneNumber(number: string, countryCode = "US") {
+  try {
+    const phoneNumber = phoneUtil.parseAndKeepRawInput(number, countryCode);
+    if (phoneUtil.isValidNumber(phoneNumber)) {
+      return phoneUtil.format(phoneNumber, PhoneNumberFormat.E164);
+    } else {
+      console.log("Invalid number:", number);
+      return null;
+    }
+  } catch (error) {
+    console.error("Failed to parse number:", number, "Error:", error);
+    return null;
+  }
+}
 
 export async function sendMessageToGuestList(
   message: string,
@@ -45,11 +63,31 @@ export async function sendMessageToGuestList(
             guest["Last Name"]
           } @ ${guest.Phone} ${test ? "(test)" : ""}.`
         );
-        if (!test) {
+
+        // First we format the number
+        let formattedNumber;
+        try {
+          formattedNumber = formatPhoneNumber(guest.Phone);
+        } catch (error) {
+          console.error(error);
+          report.errors++;
+          await sendMessage(
+            MAX_PHONE,
+            `Failed formatting number for guest: ${guest["First Name"]} ${guest["Last Name"]} @ ${guest.Phone}`
+          );
+          return;
+        }
+
+        if (!test && formattedNumber) {
           try {
             await sendMessage(guest.Phone, message);
           } catch (error) {
             console.error(error);
+            report.errors++;
+            await sendMessage(
+              MAX_PHONE,
+              `Failed sending message to guest: ${guest["First Name"]} ${guest["Last Name"]} @ ${guest.Phone}`
+            );
           }
         }
         report.sent++;
