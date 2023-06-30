@@ -78,9 +78,16 @@ export async function sendMessageToGuestList(
           return;
         }
 
+        console.log(
+          `Successfully formatted number: ${formattedNumber} from ${guest.Phone}`
+        );
+
         if (!test && formattedNumber) {
           try {
-            await sendMessage(guest.Phone, message);
+            console.log(
+              `Sending message to ${formattedNumber}. for ${guest["First Name"]} ${guest["Last Name"]}`
+            );
+            await sendMessage(formattedNumber, message);
           } catch (error) {
             console.error(error);
             report.errors++;
