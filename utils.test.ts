@@ -1,4 +1,8 @@
-import { formatPhoneNumber } from "./utils";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+import { formatPhoneNumber, sendMessageToGuestList } from "./utils";
 
 const somePhoneNumbers = [
   "+44 7803 803962",
@@ -13,6 +17,7 @@ function main() {
       `formatting ${phoneNumber} to ${formatPhoneNumber(phoneNumber)}`
     );
   });
+  sendMessageToGuestList("Hello, World!", true);
 }
 
 main();

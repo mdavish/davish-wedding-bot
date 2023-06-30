@@ -43,6 +43,8 @@ app.post("/incoming-message", async (req, res) => {
       return res.send("Sorry, something went wrong. Please try again later.");
     }
 
+    console.log(`Received message from ${sender}: ${parsedBody.data}`);
+
     if (parsedBody.data.startsWith("<BLAST>")) {
       const truncatedMessage = parsedBody.data.replace("<BLAST>", "");
       const report = await sendMessageToGuestList(truncatedMessage);

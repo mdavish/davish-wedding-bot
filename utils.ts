@@ -48,64 +48,57 @@ export async function sendMessageToGuestList(
     errors: 0,
   };
 
-  await Promise.all(
-    parsedList.map(async (guest, index) => {
-      const isAttendingAnyEvents =
-        guest.Rehearsal || guest.Wedding || guest["Welcome Drinks"];
-      if (!isAttendingAnyEvents) {
-        console.log(
-          `${index}. ${guest["First Name"]} ${guest["Last Name"]} is not attending any events.`
-        );
-        report.skippedNoEvents++;
-      } else if (guest.Phone && guest.Phone.length > 1) {
-        console.log(
-          `${index}. Sending message to ${guest["First Name"]} ${
-            guest["Last Name"]
-          } @ ${guest.Phone} ${test ? "(test)" : ""}.`
-        );
+  for (let i = 0; i < parsedList.length; i++) {
+    const guest = parsedList[i];
+    const isAttendingAnyEvents =
+      guest.Rehearsal || guest.Wedding || guest["Welcome Drinks"];
 
-        // First we format the number
-        let formattedNumber;
+    if (!isAttendingAnyEvents) {
+      console.log(
+        `${i}. ${guest["First Name"]} ${guest["Last Name"]} is not attending any events.`
+      );
+      report.skippedNoEvents++;
+    } else if (guest.Phone && guest.Phone.length > 1) {
+      // The rest of your code here...
+      // First we format the number
+      let formattedNumber;
+      try {
+        formattedNumber = formatPhoneNumber(guest.Phone);
+      } catch (error) {
+        console.error(error);
+        report.errors++;
+        await sendMessage(
+          MAX_PHONE,
+          `Failed formatting number for guest: ${guest["First Name"]} ${guest["Last Name"]} @ ${guest.Phone}`
+        );
+        continue;
+      }
+
+      if (!test && formattedNumber) {
         try {
-          formattedNumber = formatPhoneNumber(guest.Phone);
+          console.log(
+            `Sending message to ${formattedNumber}. for ${guest["First Name"]} ${guest["Last Name"]}`
+          );
+          await sendMessage(formattedNumber, message);
+          // Introduce delay here
         } catch (error) {
           console.error(error);
           report.errors++;
           await sendMessage(
             MAX_PHONE,
-            `Failed formatting number for guest: ${guest["First Name"]} ${guest["Last Name"]} @ ${guest.Phone}`
+            `Failed sending message to guest: ${guest["First Name"]} ${guest["Last Name"]} @ ${guest.Phone}`
           );
-          return;
         }
-
-        console.log(
-          `Successfully formatted number: ${formattedNumber} from ${guest.Phone}`
-        );
-
-        if (!test && formattedNumber) {
-          try {
-            console.log(
-              `Sending message to ${formattedNumber}. for ${guest["First Name"]} ${guest["Last Name"]}`
-            );
-            await sendMessage(formattedNumber, message);
-          } catch (error) {
-            console.error(error);
-            report.errors++;
-            await sendMessage(
-              MAX_PHONE,
-              `Failed sending message to guest: ${guest["First Name"]} ${guest["Last Name"]} @ ${guest.Phone}`
-            );
-          }
-        }
-        report.sent++;
-      } else {
-        console.log(
-          `${index}. No phone number for ${guest["First Name"]} ${guest["Last Name"]}.`
-        );
-        report.skippedNoPhone++;
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 second delay between messages
       }
-    })
-  );
+      report.sent++;
+    } else {
+      console.log(
+        `${i}. No phone number for ${guest["First Name"]} ${guest["Last Name"]}.`
+      );
+      report.skippedNoPhone++;
+    }
+  }
 
   if (test) {
     console.log(`Sending test message to ${ASHLEY_PHONE} and ${MAX_PHONE}`);

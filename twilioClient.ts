@@ -6,6 +6,11 @@ dotenv.config();
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 
+console.log({
+  accountSid,
+  authToken,
+});
+
 export const client = twilio(accountSid, authToken);
 
 export async function sendMessage(to: string, body: string): Promise<void> {
