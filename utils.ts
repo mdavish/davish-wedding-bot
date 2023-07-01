@@ -10,8 +10,11 @@ interface Report {
   errors: number;
 }
 
-const ASHLEY_PHONE = "9724002844";
-const MAX_PHONE = "2155346876";
+const ASHLEY_PHONE = "+19724002844";
+const MAX_PHONE = "+12155346876";
+const NICK_PHONE = "+19723101405";
+const DANIEL_PHONE = "+12149120568";
+const SAM_PHONE = "+13148092321";
 
 const phoneUtil = PhoneNumberUtil.getInstance();
 
@@ -100,10 +103,22 @@ export async function sendMessageToGuestList(
     }
   }
 
+  // For tests, we send Max, Ashley, Nick, Sam, and Daniel
   if (test) {
-    console.log(`Sending test message to ${ASHLEY_PHONE} and ${MAX_PHONE}`);
-    await sendMessage(ASHLEY_PHONE, message);
-    await sendMessage(MAX_PHONE, message);
+    const phones = [
+      ASHLEY_PHONE,
+      MAX_PHONE,
+      NICK_PHONE,
+      DANIEL_PHONE,
+      SAM_PHONE
+    ]
+
+    // For each phone number, send the message
+    for (let i = 0; i < phones.length; i++) {
+      const phone = phones[i];
+      console.log(`Sending test message to ${phone}`);
+      await sendMessage(phone, message);
+    }
   }
   return report;
 }
